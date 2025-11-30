@@ -23,7 +23,6 @@ FLAG_FUNCTIONS = {
 def main():
     if len(sys.argv) < 3:
         print("Usage: python3 stage1.py <input_file> <flags...>")
-        print("Example: python3 stage1.py input.txt -WLDA6 -WLDA7")
         sys.exit(1)
 
     input_file = sys.argv[1]
@@ -32,15 +31,19 @@ def main():
     if not os.path.exists(input_file):
         print(f"Error: input file '{input_file}' not found")
         sys.exit(1)
+    else:
+        print(f"Processing: {input_file}")
+
+    for flag in flags:
+        if flag not in FLAG_FUNCTIONS:
+            print(f"Warning: unknown flag '{flag}', skipping")
+            sys.exit(1)
 
     # Load once
     df = pd.read_csv(input_file, sep='\t', dtype=str)
 
     # Apply flags in order
     for flag in flags:
-        if flag not in FLAG_FUNCTIONS:
-            print(f"Warning: unknown flag '{flag}', skipping")
-            continue
         df = FLAG_FUNCTIONS[flag](df)
 
     # Prepare output folder
