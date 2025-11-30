@@ -17,7 +17,7 @@ def MAINCHR(df): # WLDA-6 Keep only main chromosomes
 
 # Map flag name -> function
 FLAG_FUNCTIONS = {
-    '-WLDA6': MAINCHR
+    '-MAINCHR': MAINCHR
 }
 
 def main():
