@@ -85,6 +85,7 @@ def main():
     # Apply flags in order
     for flag in flags:
         df = FLAG_FUNCTIONS[flag](df)
+        print(f"Applied: {flag}")
 
     # Prepare output folder
     input_dir = os.path.dirname(os.path.abspath(input_file))
