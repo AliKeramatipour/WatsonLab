@@ -112,6 +112,32 @@ def ZYGO(df): # WLDA-12
     ]
     return df.drop(columns=[c for c in drop_cols if c in df])
 
+def HGVSC_P(df): # WLDA-13
+    def merge_values(row):
+        ref = row["AAChange.refGene"]
+        ens = row["AAChange.ensGene"]
+
+        if ref == "." and ens == ".":
+            return "."
+        if ref == ".":
+            return ens
+        if ens == ".":
+            return ref
+        return f"{ref} |{ens}"
+
+    df["HgvsC&HgvsP"] = df.apply(merge_values, axis=1)
+
+    # Remove old columns and reorder so the new column replaces refGene
+    col_pos = df.columns.get_loc("AAChange.refGene")
+    df.drop(columns=["AAChange.refGene", "AAChange.ensGene"], inplace=True)
+
+    cols = list(df.columns)
+    # Insert new col at the old position
+    cols.insert(col_pos, cols.pop(cols.index("HgvsC&HgvsP")))
+    df = df[cols]
+
+    return df
+
 
 # Map flag name -> function
 FLAG_FUNCTIONS = {
@@ -120,7 +146,8 @@ FLAG_FUNCTIONS = {
     '-GNOMAD0' : GNOMAD0,
     '-ACMG': ACMG,
     '-CHR-POS-REF-ALT': CHR_POS_REF_ALT,
-    '-ZYGO': ZYGO
+    '-ZYGO': ZYGO,
+    '-HGVSC_P': HGVSC_P
 }
 
 def main():
