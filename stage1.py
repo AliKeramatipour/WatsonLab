@@ -25,11 +25,39 @@ def GNOMAD0(df): # WLDA-9
     df["gnomad41_exome_AF"]  = df["gnomad41_exome_AF"].replace(".", "0")
     return df
 
+def ACMG(df):# WLDA-10
+    # Find where InterVar_automated is
+    idx = df.columns.get_loc("InterVar_automated")
+
+    # Collect the 28 ACMG evidence column names (the next 28 columns)
+    acmg_cols = df.columns[idx+1 : idx+29]
+
+    # Create empty ACMG column initially
+    df.insert(idx + 1, "ACMG", "")
+
+    # Build ACMG string row-by-row
+    def summarize(row):
+        names = []
+        for col in acmg_cols:
+            val = row[col]
+            if val == "1":
+                names.append(col)
+        return ";".join(names) if names else ""
+
+    df["ACMG"] = df.apply(summarize, axis=1)
+
+    # Remove the 28 columns afterwards
+    df = df.drop(columns=acmg_cols)
+
+    return df
+
+
 # Map flag name -> function
 FLAG_FUNCTIONS = {
     '-MAINCHR': MAINCHR,
     '-SPLITGENE': SPLITGENE,
     '-GNOMAD0' : GNOMAD0,
+    '-ACMG': ACMG
 }
 
 def main():
