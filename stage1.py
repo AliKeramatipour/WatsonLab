@@ -19,10 +19,17 @@ def SPLITGENE(df): # WLDA-7
     df = df.explode("Gene.refGene")
     return df.reset_index(drop=True)
 
+
+def GNOMAD0(df): # WLDA-9
+    df["gnomad41_genome_AF"] = df["gnomad41_genome_AF"].replace(".", "0")
+    df["gnomad41_exome_AF"]  = df["gnomad41_exome_AF"].replace(".", "0")
+    return df
+
 # Map flag name -> function
 FLAG_FUNCTIONS = {
     '-MAINCHR': MAINCHR,
     '-SPLITGENE': SPLITGENE,
+    '-GNOMAD0' : GNOMAD0,
 }
 
 def main():
