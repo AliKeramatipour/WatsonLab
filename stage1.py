@@ -14,10 +14,15 @@ def MAINCHR(df): # WLDA-6 Keep only main chromosomes
         sys.exit(1)
     return df[df['Chr'].isin(MAIN_CHROMS)].reset_index(drop=True)
 
+def SPLITGENE(df): # WLDA-7
+    df["Gene.refGene"] = df["Gene.refGene"].str.split(",")
+    df = df.explode("Gene.refGene")
+    return df.reset_index(drop=True)
 
 # Map flag name -> function
 FLAG_FUNCTIONS = {
-    '-MAINCHR': MAINCHR
+    '-MAINCHR': MAINCHR,
+    '-SPLITGENE': SPLITGENE,
 }
 
 def main():
