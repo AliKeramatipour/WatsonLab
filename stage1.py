@@ -240,6 +240,91 @@ def REMOVECHR(df): # WLDA-17
 
     return df
 
+def REORDER(df): # WLDA-18
+    final_order = [
+        "Chr",
+        "Position",
+        "Reference",
+        "Alternate",
+        "Zygosity",
+        "Coverage",
+        "AltReads",
+        "RefReads",
+        "Vaf",
+        "Gene Name",
+        "Genomic_Context",
+        "Consequence",
+        "HgvsC&HgvsP",
+        "Transcripts",
+        "InterVar_automated",
+        "ACMG",
+        "CLNSIG",
+        "CLNDN",
+        "CLNDISDB",
+        "gnomad41_genome_AF",
+        "gnomad41_genome_AF_raw",
+        "gnomad41_genome_AF_XX",
+        "gnomad41_genome_AF_XY",
+        "gnomad41_genome_AF_grpmax",
+        "gnomad41_genome_faf95",
+        "gnomad41_genome_faf99",
+        "gnomad41_exome_AF",
+        "gnomad41_exome_AF_raw",
+        "gnomad41_exome_AF_XX",
+        "gnomad41_exome_AF_XY",
+        "gnomad41_exome_AF_grpmax",
+        "gnomad41_exome_faf95",
+        "gnomad41_exome_faf99",
+        "SIFT_score",
+        "SIFT_pred",
+        "Polyphen2_HDIV_score",
+        "Polyphen2_HDIV_pred",
+        "Polyphen2_HVAR_score",
+        "Polyphen2_HVAR_pred",
+        "LRT_score",
+        "LRT_pred",
+        "MutationTaster_score",
+        "MutationTaster_pred",
+        "MutationAssessor_score",
+        "MutationAssessor_pred",
+        "FATHMM_score",
+        "FATHMM_pred",
+        "RadialSVM_score",
+        "RadialSVM_pred",
+        "LR_score",
+        "LR_pred",
+        "VEST3_score",
+        "CADD_raw",
+        "CADD_phred",
+        "GERP++_RS",
+        "phyloP46way_placental",
+        "phyloP100way_vertebrate",
+        "SiPhy_29way_logOdds",
+    ]
+
+    # Check for missing columns
+    missing = [col for col in final_order if col not in df.columns]
+
+    # Check for extra columns
+    extra = [col for col in df.columns if col not in final_order]
+
+    if extra:
+        raise ValueError(
+            "\n❌ ERROR: Unexpected columns exist in the file.\n"
+            f"❗Extra columns found:\n{extra}\n"
+            "The workflow has been stopped."
+        )
+
+    # Optional: warn if expected columns are missing (doesn't stop)
+    if missing:
+        print("\n WARNING: Some expected columns are missing:")
+        print(missing)
+
+    # Reorder only the columns that exist (missing ones are ignored)
+    cols_to_use = [col for col in final_order if col in df.columns]
+
+    return df[cols_to_use]
+
 # Map flag name -> function
 FLAG_FUNCTIONS = {
     '-MAINCHR': MAINCHR,
