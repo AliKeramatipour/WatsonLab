@@ -19,7 +19,6 @@ def SPLITGENE(df): # WLDA-7
     df = df.explode("Gene.refGene")
     return df.reset_index(drop=True)
 
-
 def GNOMAD0(df): # WLDA-9
     df["gnomad41_genome_AF"] = df["gnomad41_genome_AF"].replace(".", "0")
     df["gnomad41_exome_AF"]  = df["gnomad41_exome_AF"].replace(".", "0")
@@ -51,7 +50,6 @@ def ACMG(df):# WLDA-10
 
     return df
 
-
 def CHR_POS_REF_ALT(df): # WLDA-11
     cols_to_drop = ["Chr", "Start", "End", "Ref", "Alt"]
     df = df.drop(columns=cols_to_drop, errors="ignore")
@@ -76,7 +74,6 @@ def CHR_POS_REF_ALT(df): # WLDA-11
     df = pd.concat([new_front, df], axis=1)
     
     return df
-
 
 def ZYGO(df): # WLDA-12
     def parse(x):
@@ -138,6 +135,33 @@ def HGVSC_P(df): # WLDA-13
 
     return df
 
+def TRANSCRIPT(df): # WLDA-14
+    def merge_values(row):
+        ref = row["GeneDetail.refGene"]
+        ens = row["GeneDetail.ensGene"]
+
+        if ref == "." and ens == ".":
+            return "."
+        if ref == ".":
+            return ens
+        if ens == ".":
+            return ref
+        return f"{ref} |{ens}"
+
+    # Create new merged column
+    df["Transcripts"] = df.apply(merge_values, axis=1)
+
+    # Insert new column at old refGene position
+    pos = df.columns.get_loc("GeneDetail.refGene")
+
+    df.drop(columns=["GeneDetail.refGene", "GeneDetail.ensGene"], inplace=True)
+
+    cols = list(df.columns)
+    cols.insert(pos, cols.pop(cols.index("Transcripts")))
+    df = df[cols]
+
+    return df
+
 
 # Map flag name -> function
 FLAG_FUNCTIONS = {
@@ -147,7 +171,8 @@ FLAG_FUNCTIONS = {
     '-ACMG': ACMG,
     '-CHR-POS-REF-ALT': CHR_POS_REF_ALT,
     '-ZYGO': ZYGO,
-    '-HGVSC_P': HGVSC_P
+    '-HGVSC_P': HGVSC_P,
+    '-TRANSCRIPT': TRANSCRIPT
 }
 
 def main():
