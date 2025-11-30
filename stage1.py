@@ -224,6 +224,22 @@ def RENAME(df): # WLDA-16
     df = df.rename(columns=valid_map)
     return df
 
+def REMOVECHR(df): # WLDA-17
+    if "Chr" not in df.columns:
+        return df   # Nothing to do
+
+    def strip_chr(val):
+        if isinstance(val, str) and val.startswith("chr"):
+            return val[3:]  # remove 'chr'
+        return val
+
+    df["Chr"] = df["Chr"].apply(strip_chr)
+
+    # Normalise special cases
+    df["Chr"] = df["Chr"].replace({"MT": "M", "m": "M", "Mt": "M"})
+
+    return df
+
 # Map flag name -> function
 FLAG_FUNCTIONS = {
     '-MAINCHR': MAINCHR,
@@ -235,7 +251,8 @@ FLAG_FUNCTIONS = {
     '-HGVSC_P': HGVSC_P,
     '-TRANSCRIPT': TRANSCRIPT,
     '-DELCOL' : DELCOL,
-    '-RENAME' : RENAME
+    '-RENAME' : RENAME,
+    '-REMOVECHR': REMOVECHR
 }
 
 def main():
