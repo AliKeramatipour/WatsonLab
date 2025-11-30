@@ -77,13 +77,50 @@ def CHR_POS_REF_ALT(df): # WLDA-11
     
     return df
 
+
+def ZYGO(df): # WLDA-12
+    def parse(x):
+        parts = x.split(':')
+        ref, alt = map(int, parts[1].split(','))
+        cov = int(parts[2])
+        vaf = alt / cov if cov > 0 else 0
+
+        if vaf < 0.25:
+            zy = "FP/HET"
+        elif vaf < 0.75:
+            zy = "HET"
+        elif vaf < 0.85:
+            zy = "HET/HOM"
+        else:
+            zy = "HOM"
+
+        return pd.Series([zy, cov, ref, alt, vaf])
+
+    df[["Zygosity", "Coverage", "RefReads", "AltReads", "VAF"]] = (
+        df["Otherinfo13"].apply(parse)
+    )
+
+    # Insert after Alternate
+    alt_idx = df.columns.get_loc("Alternate") + 1
+    cols_new = ["Zygosity", "Coverage", "RefReads", "AltReads", "VAF"]
+    df = df[df.columns[:alt_idx].tolist() + cols_new + df.columns[alt_idx:].tolist()]
+
+    # Drop unwanted
+    drop_cols = [
+        "Otherinfo1","Otherinfo2","Otherinfo3","Otherinfo9",
+        "Otherinfo10","Otherinfo11","Otherinfo12","Otherinfo13"
+    ]
+    return df.drop(columns=[c for c in drop_cols if c in df])
+
+
 # Map flag name -> function
 FLAG_FUNCTIONS = {
     '-MAINCHR': MAINCHR,
     '-SPLITGENE': SPLITGENE,
     '-GNOMAD0' : GNOMAD0,
     '-ACMG': ACMG,
-    '-CHR-POS-REF-ALT': CHR_POS_REF_ALT
+    '-CHR-POS-REF-ALT': CHR_POS_REF_ALT,
+    '-ZYGO': ZYGO
 }
 
 def main():
