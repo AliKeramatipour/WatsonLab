@@ -211,6 +211,19 @@ def DELCOL(df): # WLDA-15
 
     return df
 
+def RENAME(df): # WLDA-16
+    rename_map = {
+        "Gene.refGene": "Gene Name",
+        "Func.refGene": "Genomic_Context",
+        "ExonicFunc.refGene": "Consequence",
+    }
+
+    # Only rename columns that actually exist
+    valid_map = {old: new for old, new in rename_map.items() if old in df.columns}
+
+    df = df.rename(columns=valid_map)
+    return df
+
 # Map flag name -> function
 FLAG_FUNCTIONS = {
     '-MAINCHR': MAINCHR,
@@ -221,7 +234,8 @@ FLAG_FUNCTIONS = {
     '-ZYGO': ZYGO,
     '-HGVSC_P': HGVSC_P,
     '-TRANSCRIPT': TRANSCRIPT,
-    '-DELCOL' : DELCOL
+    '-DELCOL' : DELCOL,
+    '-RENAME' : RENAME
 }
 
 def main():
