@@ -52,12 +52,38 @@ def ACMG(df):# WLDA-10
     return df
 
 
+def CHR_POS_REF_ALT(df): # WLDA-11
+    cols_to_drop = ["Chr", "Start", "End", "Ref", "Alt"]
+    df = df.drop(columns=cols_to_drop, errors="ignore")
+
+    needed = ["Otherinfo4", "Otherinfo5", "Otherinfo7", "Otherinfo8"]
+
+    for col in needed:
+        if col not in df.columns:
+            print(f"Error: required column '{col}' not found.")
+            sys.exit(1)
+
+    new_front = df[needed].copy()
+
+    rename_map = {
+        "Otherinfo4": "Chr",
+        "Otherinfo5": "position",
+        "Otherinfo7": "Reference",
+        "Otherinfo8": "Alternate"
+    }
+    new_front = new_front.rename(columns=rename_map)
+    df = df.drop(columns=needed)
+    df = pd.concat([new_front, df], axis=1)
+    
+    return df
+
 # Map flag name -> function
 FLAG_FUNCTIONS = {
     '-MAINCHR': MAINCHR,
     '-SPLITGENE': SPLITGENE,
     '-GNOMAD0' : GNOMAD0,
-    '-ACMG': ACMG
+    '-ACMG': ACMG,
+    '-CHR-POS-REF-ALT': CHR_POS_REF_ALT
 }
 
 def main():
