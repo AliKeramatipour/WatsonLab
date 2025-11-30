@@ -162,6 +162,54 @@ def TRANSCRIPT(df): # WLDA-14
 
     return df
 
+def DELCOL(df): # WLDA-15
+    cols_to_delete = [
+        "ONCDN", "ONCDISDB", "ONCREVSTAT", "ONC",
+        "SCIDN", "SCIDISDB", "SCIREVSTAT", "SCI",
+
+        "gnomad41_exome_fafmax_faf95_max",
+        "gnomad41_exome_fafmax_faf99_max",
+        "gnomad41_exome_AF_afr",
+        "gnomad41_exome_AF_amr",
+        "gnomad41_exome_AF_asj",
+        "gnomad41_exome_AF_eas",
+        "gnomad41_exome_AF_fin",
+        "gnomad41_exome_AF_mid",
+        "gnomad41_exome_AF_nfe",
+        "gnomad41_exome_AF_remaining",
+        "gnomad41_exome_AF_sas",
+
+        "REGENERON_ALL_AF",
+        "REGENERON_ALL_AC",
+        "REGENERON_ALL_AN",
+
+        "MCAP",
+        "REVEL",
+        "CLNALLELEID",
+
+        "gnomad41_genome_fafmax_faf95_max",
+        "gnomad41_genome_fafmax_faf99_max",
+        "gnomad41_genome_AF_afr",
+        "gnomad41_genome_AF_ami",
+        "gnomad41_genome_AF_amr",
+        "gnomad41_genome_AF_asj",
+        "gnomad41_genome_AF_eas",
+        "gnomad41_genome_AF_fin",
+        "gnomad41_genome_AF_mid",
+        "gnomad41_genome_AF_nfe",
+        "gnomad41_genome_AF_remaining",
+        "gnomad41_genome_AF_sas",
+
+        "Func.ensGene",
+        "Gene.ensGene",
+        "ExonicFunc.ensGene",
+        "CLNREVSTAT"
+    ]
+
+    existing = [c for c in cols_to_delete if c in df.columns]
+    df = df.drop(columns=existing)
+
+    return df
 
 # Map flag name -> function
 FLAG_FUNCTIONS = {
@@ -172,7 +220,8 @@ FLAG_FUNCTIONS = {
     '-CHR-POS-REF-ALT': CHR_POS_REF_ALT,
     '-ZYGO': ZYGO,
     '-HGVSC_P': HGVSC_P,
-    '-TRANSCRIPT': TRANSCRIPT
+    '-TRANSCRIPT': TRANSCRIPT,
+    '-DELCOL' : DELCOL
 }
 
 def main():
