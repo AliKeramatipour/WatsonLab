@@ -162,7 +162,7 @@ def TRANSCRIPT(df): # WLDA-14
 
     return df
 
-def DELCOL(df, col_to_delete=None): # WLDA-15
+def DELCOL(df, new_cols_delete=None): # WLDA-15
     cols_to_delete = [
         "ONCDN", "ONCDISDB", "ONCREVSTAT", "ONC",
         "SCIDN", "SCIDISDB", "SCIREVSTAT", "SCI",
@@ -216,10 +216,12 @@ def DELCOL(df, col_to_delete=None): # WLDA-15
     ]
 
     # If a specific column name is provided, delete only that column (if exists)
-    if col_to_delete is not None:
-        if col_to_delete not in df.columns:
-            print(f"Warning: column '{col_to_delete}' not found, skipping DELCOL")
-            cols_to_delete.append(col_to_delete)
+    if new_cols_delete is not None:
+        for col_to_delete in new_cols_delete:
+            if col_to_delete in df.columns:
+                cols_to_delete.append(col_to_delete)
+            else:
+                print(f"Warning: column '{col_to_delete}' not found, skipping DELCOL")
         
     existing = [c for c in cols_to_delete if c in df.columns]
     df = df.drop(columns=existing)
@@ -359,10 +361,11 @@ FLAG_FUNCTIONS = {
 def main():
     if len(sys.argv) < 3:
         print("Usage: python3 stage1.py <input_file> <flags...>")
+        print("Example: python3 stage1.py input.tsv -DELCOL \"ColA\" \"ColB\" -RENAME")
         sys.exit(1)
 
     input_file = sys.argv[1]
-    flags = sys.argv[2:]
+    raw_args = sys.argv[2:]
 
     if not os.path.exists(input_file):
         print(f"Error: input file '{input_file}' not found")
@@ -370,18 +373,48 @@ def main():
     else:
         print(f"Processing: {input_file}")
 
-    for flag in flags:
-        if flag not in FLAG_FUNCTIONS:
-            print(f"Warning: unknown flag '{flag}', skipping")
+    # Process flags and arguments
+    flags_to_apply = []  # List of (flag_name, args_list or None)
+    i = 0
+    while i < len(raw_args):
+        arg = raw_args[i]
+        
+        # Check if this is a flag (starts with -)
+        if arg.startswith('-'):
+            if arg == '-DELCOL':
+                # Collect all following arguments until the next flag
+                cols = []
+                j = i + 1
+                while j < len(raw_args) and not raw_args[j].startswith('-'):
+                    col_arg = raw_args[j]
+                    print(f"Deleting column: {col_arg}")
+                    cols.append(col_arg)
+                    j += 1
+                
+                flags_to_apply.append(('-DELCOL', cols))
+                i = j
+            else:
+                # Regular flag
+                if arg not in FLAG_FUNCTIONS:
+                    print(f"Warning: unknown flag '{arg}'")
+                    sys.exit(1)
+                flags_to_apply.append((arg, None))
+                i += 1
+        else:
+            print(f"Error: unexpected argument '{arg}' (expected flag starting with -)")
             sys.exit(1)
 
     # Load once
     df = pd.read_csv(input_file, sep='\t', dtype=str)
 
     # Apply flags in order
-    for flag in flags:
-        df = FLAG_FUNCTIONS[flag](df)
-        print(f"Applied: {flag}")
+    for flag, cols in flags_to_apply:
+        if flag == '-DELCOL':
+            df = DELCOL(df, cols)
+            print(f"Applied: {flag} {cols}")
+        else:
+            df = FLAG_FUNCTIONS[flag](df)
+            print(f"Applied: {flag}")
 
     # Prepare output folder
     input_dir = os.path.dirname(os.path.abspath(input_file))
@@ -392,7 +425,6 @@ def main():
     # Save final output
     df.to_csv(output_file, sep='\t', index=False)
     print("✓ Finished")
-    print(f"Applied flags: {flags}")
 
 if __name__ == "__main__":
     main()
