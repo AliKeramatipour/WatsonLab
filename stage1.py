@@ -162,7 +162,7 @@ def TRANSCRIPT(df): # WLDA-14
 
     return df
 
-def DELCOL(df): # WLDA-15
+def DELCOL(df, col_to_delete=None): # WLDA-15
     cols_to_delete = [
         "ONCDN", "ONCDISDB", "ONCREVSTAT", "ONC",
         "SCIDN", "SCIDISDB", "SCIREVSTAT", "SCI",
@@ -203,9 +203,24 @@ def DELCOL(df): # WLDA-15
         "Func.ensGene",
         "Gene.ensGene",
         "ExonicFunc.ensGene",
-        "CLNREVSTAT"
+        "CLNREVSTAT",
+
+        "Otherinfo1",
+        "Otherinfo2",
+        "Otherinfo3",
+        "Otherinfo6",
+        "Otherinfo9",
+        "Otherinfo10",
+        "Otherinfo11",
+        "Otherinfo12"
     ]
 
+    # If a specific column name is provided, delete only that column (if exists)
+    if col_to_delete is not None:
+        if col_to_delete not in df.columns:
+            print(f"Warning: column '{col_to_delete}' not found, skipping DELCOL")
+            cols_to_delete.append(col_to_delete)
+        
     existing = [c for c in cols_to_delete if c in df.columns]
     df = df.drop(columns=existing)
 
